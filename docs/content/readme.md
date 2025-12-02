@@ -6,7 +6,7 @@ Markdown CLI 工具集，提供目录生成、格式化、检查等功能。
 
 | 子命令  | 说明                   | 状态      |
 | ------- | ---------------------- | --------- |
-| `toc`   | 生成 Table of Contents | 🚧 开发中 |
+| `toc`   | 生成 Table of Contents | ✅ 已完成 |
 | `fmt`   | 格式化 Markdown        | 📋 计划中 |
 | `lint`  | 检查 Markdown 规范     | 📋 计划中 |
 | `links` | 检查链接有效性         | 📋 计划中 |

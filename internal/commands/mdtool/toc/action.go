@@ -6,8 +6,12 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/lwmacct/251202-mc-mdtool/internal/mdtoc"
 	"github.com/urfave/cli/v3"
 )
+
+// ExitCodeDiff 是 --diff 检测到差异时的退出码
+const ExitCodeDiff = 128
 
 func action(ctx context.Context, cmd *cli.Command) error {
 	// 解析命令行参数
@@ -48,14 +52,51 @@ func action(ctx context.Context, cmd *cli.Command) error {
 		"ordered", ordered,
 	)
 
-	// TODO: 实现 Markdown 目录生成逻辑
-	// 1. 读取文件内容
-	// 2. 解析标题结构 (GitHub 风格 ATX 标题)
-	// 3. 生成 TOC (anchor link 规则参考 vendor/md-toc/md_toc/api.py)
-	// 4. 查找 <!--TOC--> 标记并替换
-	// 5. 根据 inPlace/diff 参数决定输出方式
+	// 创建 TOC 实例
+	toc := mdtoc.New(mdtoc.Options{
+		MinLevel: int(minLevel),
+		MaxLevel: int(maxLevel),
+		Ordered:  ordered,
+	})
 
-	fmt.Println("md-toc 功能开发中...")
+	// 根据模式执行不同操作
+	switch {
+	case diff:
+		// 检查差异模式
+		hasDiff, err := toc.CheckDiff(file)
+		if err != nil {
+			return fmt.Errorf("检查差异失败: %w", err)
+		}
+		if hasDiff {
+			fmt.Fprintln(os.Stderr, "TOC 需要更新")
+			os.Exit(ExitCodeDiff)
+		}
+		fmt.Println("TOC 已是最新")
+		return nil
 
-	return nil
+	case inPlace:
+		// 原地更新模式
+		hasMarker, err := toc.HasMarker(file)
+		if err != nil {
+			return fmt.Errorf("检查标记失败: %w", err)
+		}
+		if !hasMarker {
+			return fmt.Errorf("文件中未找到 %s 标记", mdtoc.DefaultMarker)
+		}
+
+		if err := toc.UpdateFile(file); err != nil {
+			return fmt.Errorf("更新文件失败: %w", err)
+		}
+		fmt.Printf("已更新 %s 的目录\n", file)
+		return nil
+
+	default:
+		// 输出到 stdout 模式
+		tocStr, err := toc.GenerateFromFile(file)
+		if err != nil {
+			return fmt.Errorf("生成 TOC 失败: %w", err)
+		}
+		fmt.Println(tocStr)
+		return nil
+	}
 }
