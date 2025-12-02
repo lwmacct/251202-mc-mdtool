@@ -153,6 +153,78 @@ func extractText(src []byte, n ast.Node) string {
 	return buf.String()
 }
 
+// ParseAllHeaders 解析所有标题 (不受 MinLevel/MaxLevel 限制)
+// 用于章节模式，需要完整的标题层级信息
+func (p *Parser) ParseAllHeaders(content []byte) ([]*Header, error) {
+	p.anchor.Reset()
+	lineMap := buildLineMap(content)
+	totalLines := countLines(content)
+
+	reader := text.NewReader(content)
+	doc := p.md.Parser().Parse(reader)
+
+	var headers []*Header
+
+	err := ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
+		if !entering {
+			return ast.WalkContinue, nil
+		}
+
+		heading, ok := n.(*ast.Heading)
+		if !ok {
+			return ast.WalkContinue, nil
+		}
+
+		text := extractText(content, heading)
+		anchor := p.anchor.Generate(text)
+		line := getNodeLine(heading, lineMap)
+
+		headers = append(headers, &Header{
+			Level:      heading.Level,
+			Text:       text,
+			AnchorLink: anchor,
+			Line:       line,
+		})
+
+		return ast.WalkSkipChildren, nil
+	})
+
+	calculateEndLines(headers, totalLines)
+	return headers, err
+}
+
+// SplitSections 将标题列表按 H1 分割成章节
+// 每个章节包含一个 H1 和其后续的子标题 (H2-H6)
+func SplitSections(headers []*Header) []*Section {
+	var sections []*Section
+	var currentSection *Section
+
+	for _, h := range headers {
+		if h.Level == 1 {
+			// 遇到新的 H1，创建新章节
+			if currentSection != nil {
+				sections = append(sections, currentSection)
+			}
+			currentSection = &Section{
+				Title:      h,
+				SubHeaders: []*Header{},
+			}
+		} else if currentSection != nil {
+			// 当前在某个章节内，添加子标题
+			currentSection.SubHeaders = append(currentSection.SubHeaders, h)
+		}
+		// 如果 currentSection == nil 且 h.Level != 1，
+		// 说明在第一个 H1 之前有其他标题，跳过这些标题
+	}
+
+	// 添加最后一个章节
+	if currentSection != nil {
+		sections = append(sections, currentSection)
+	}
+
+	return sections
+}
+
 // writeNodeText 递归写入节点文本
 func writeNodeText(src []byte, buf *bytes.Buffer, n ast.Node) {
 	switch node := n.(type) {

@@ -63,3 +63,65 @@ func (g *Generator) Generate(headers []*Header) string {
 
 	return sb.String()
 }
+
+// GenerateSection 为单个章节生成 TOC (只包含子标题)
+// 章节模式下，每个 H1 后面只生成该章节的子目录
+func (g *Generator) GenerateSection(section *Section) string {
+	if section == nil || len(section.SubHeaders) == 0 {
+		return ""
+	}
+
+	// 筛选符合层级范围的子标题
+	var filteredHeaders []*Header
+	for _, h := range section.SubHeaders {
+		if h.Level >= g.options.MinLevel && h.Level <= g.options.MaxLevel {
+			filteredHeaders = append(filteredHeaders, h)
+		}
+	}
+
+	if len(filteredHeaders) == 0 {
+		return ""
+	}
+
+	var sb strings.Builder
+	orderedCounters := make(map[int]int)
+
+	// 找到最小层级作为基准 (章节模式下通常是 H2)
+	minLevel := 6
+	for _, h := range filteredHeaders {
+		if h.Level < minLevel {
+			minLevel = h.Level
+		}
+	}
+
+	for i, h := range filteredHeaders {
+		// 计算缩进 (相对于章节内最小层级)
+		indent := (h.Level - minLevel) * 2
+		indentStr := strings.Repeat(" ", indent)
+
+		var marker string
+		if g.options.Ordered {
+			orderedCounters[h.Level]++
+			for level := h.Level + 1; level <= 6; level++ {
+				orderedCounters[level] = 0
+			}
+			marker = itoa(orderedCounters[h.Level]) + "."
+		} else {
+			marker = "-"
+		}
+
+		link := "[" + h.Text + "](#" + h.AnchorLink + ")"
+		if g.options.LineNumber && h.Line > 0 {
+			link += " `:" + itoa(h.Line) + "-" + itoa(h.EndLine) + "`"
+		}
+
+		line := indentStr + marker + " " + link
+		sb.WriteString(line)
+
+		if i < len(filteredHeaders)-1 {
+			sb.WriteString("\n")
+		}
+	}
+
+	return sb.String()
+}

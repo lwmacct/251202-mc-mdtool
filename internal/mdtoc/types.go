@@ -16,6 +16,13 @@ type Options struct {
 	MaxLevel   int  // 最大标题层级 (默认 3)
 	Ordered    bool // 使用有序列表
 	LineNumber bool // 显示行号范围 (:start-end)
+	SectionTOC bool // 章节模式：每个 H1 后生成独立的子目录
+}
+
+// Section 表示一个章节 (H1 及其子标题)
+type Section struct {
+	Title      *Header   // H1 标题
+	SubHeaders []*Header // 子标题 (H2-H6)
 }
 
 // DefaultOptions 返回默认配置

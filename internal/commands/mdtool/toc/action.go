@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
 	"strings"
 
@@ -23,6 +22,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	diff := cmd.Bool("diff")
 	ordered := cmd.Bool("ordered")
 	lineNumber := cmd.Bool("line-number")
+	section := cmd.Bool("section")
 
 	// 验证层级参数
 	if minLevel < 1 || minLevel > 6 {
@@ -41,23 +41,13 @@ func action(ctx context.Context, cmd *cli.Command) error {
 		return fmt.Errorf("请指定要处理的 Markdown 文件")
 	}
 
-	slog.Debug("处理 Markdown 文件",
-		"files", files,
-		"count", len(files),
-		"min_level", minLevel,
-		"max_level", maxLevel,
-		"in_place", inPlace,
-		"diff", diff,
-		"ordered", ordered,
-		"line_number", lineNumber,
-	)
-
 	// 创建 TOC 实例
 	toc := mdtoc.New(mdtoc.Options{
 		MinLevel:   int(minLevel),
 		MaxLevel:   int(maxLevel),
 		Ordered:    ordered,
 		LineNumber: lineNumber,
+		SectionTOC: section,
 	})
 
 	// 根据模式执行不同操作
@@ -67,7 +57,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	case inPlace:
 		return processInPlace(toc, files)
 	default:
-		return processStdout(toc, files)
+		return processStdout(toc, files, section)
 	}
 }
 
@@ -169,14 +159,28 @@ func processInPlace(toc *mdtoc.TOC, files []string) error {
 }
 
 // processStdout 输出到 stdout 模式
-func processStdout(toc *mdtoc.TOC, files []string) error {
+func processStdout(toc *mdtoc.TOC, files []string, sectionMode bool) error {
 	for i, file := range files {
 		if err := checkFileExists(file); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", file, err)
 			continue
 		}
 
-		tocStr, err := toc.GenerateFromFile(file)
+		var tocStr string
+		var err error
+
+		if sectionMode {
+			// 章节模式：预览每个 H1 的子目录
+			content, readErr := os.ReadFile(file)
+			if readErr != nil {
+				fmt.Fprintf(os.Stderr, "%s: %v\n", file, readErr)
+				continue
+			}
+			tocStr, err = toc.GenerateSectionTOCsPreview(content)
+		} else {
+			tocStr, err = toc.GenerateFromFile(file)
+		}
+
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", file, err)
 			continue

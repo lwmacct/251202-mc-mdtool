@@ -41,6 +41,11 @@ func Command() *cli.Command {
 				Aliases: []string{"L"},
 				Usage:   "显示行号范围 (:start-end)",
 			},
+			&cli.BoolFlag{
+				Name:    "section",
+				Aliases: []string{"s"},
+				Usage:   "章节模式: 在每个 H1 后生成独立的子目录",
+			},
 		},
 		Action: action,
 	}
