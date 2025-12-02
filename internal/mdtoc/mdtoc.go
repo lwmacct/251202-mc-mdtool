@@ -41,6 +41,7 @@ func (t *TOC) GenerateFromContent(content []byte) (string, error) {
 }
 
 // UpdateFile 原地更新文件中的 TOC
+// 如果文件没有 TOC 标记，会自动在第一个标题后插入
 func (t *TOC) UpdateFile(filename string) error {
 	content, err := os.ReadFile(filename)
 	if err != nil {
@@ -52,7 +53,16 @@ func (t *TOC) UpdateFile(filename string) error {
 		return err
 	}
 
-	newContent := t.marker.InsertTOC(content, toc)
+	var newContent []byte
+	markers := t.marker.FindMarkers(content)
+	if markers.Found {
+		// 有标记，更新现有 TOC
+		newContent = t.marker.InsertTOC(content, toc)
+	} else {
+		// 没有标记，在第一个标题后插入
+		newContent = t.marker.InsertTOCAfterFirstHeading(content, toc)
+	}
+
 	return os.WriteFile(filename, newContent, 0644)
 }
 

@@ -138,6 +138,7 @@ func processDiff(toc *mdtoc.TOC, files []string) error {
 }
 
 // processInPlace 原地更新模式
+// 如果文件没有 TOC 标记，会自动在第一个标题后插入
 func processInPlace(toc *mdtoc.TOC, files []string) error {
 	var errors []string
 
@@ -147,23 +148,18 @@ func processInPlace(toc *mdtoc.TOC, files []string) error {
 			continue
 		}
 
-		hasMarker, err := toc.HasMarker(file)
-		if err != nil {
-			errors = append(errors, fmt.Sprintf("%s: %v", file, err))
-			continue
-		}
-
-		if !hasMarker {
-			fmt.Fprintf(os.Stderr, "%s: 跳过 (未找到 %s 标记)\n", file, mdtoc.DefaultMarker)
-			continue
-		}
+		hasMarker, _ := toc.HasMarker(file)
 
 		if err := toc.UpdateFile(file); err != nil {
 			errors = append(errors, fmt.Sprintf("%s: %v", file, err))
 			continue
 		}
 
-		fmt.Printf("%s: 已更新\n", file)
+		if hasMarker {
+			fmt.Printf("%s: 已更新\n", file)
+		} else {
+			fmt.Printf("%s: 已插入 (在第一个标题后)\n", file)
+		}
 	}
 
 	if len(errors) > 0 {

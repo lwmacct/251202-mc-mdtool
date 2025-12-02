@@ -114,3 +114,84 @@ func (h *MarkerHandler) ExtractExistingTOC(content []byte) string {
 	result := strings.TrimSpace(strings.Join(tocLines, "\n"))
 	return result
 }
+
+// FindFirstHeading 查找第一个标题所在行 (0-based)
+// 返回 -1 表示未找到标题
+func (h *MarkerHandler) FindFirstHeading(content []byte) int {
+	lines := bytes.Split(content, []byte("\n"))
+	inCodeBlock := false
+
+	for i, line := range lines {
+		trimmed := bytes.TrimSpace(line)
+
+		// 检测代码块
+		if bytes.HasPrefix(trimmed, []byte("```")) || bytes.HasPrefix(trimmed, []byte("~~~")) {
+			inCodeBlock = !inCodeBlock
+			continue
+		}
+
+		if inCodeBlock {
+			continue
+		}
+
+		// 检测 ATX 标题 (# ~ ######)
+		if len(trimmed) > 0 && trimmed[0] == '#' {
+			// 确保是有效标题 (# 后有空格或直接结束)
+			for j := 0; j < len(trimmed) && j < 6; j++ {
+				if trimmed[j] != '#' {
+					break
+				}
+				if j+1 < len(trimmed) && (trimmed[j+1] == ' ' || trimmed[j+1] == '\t') {
+					return i
+				}
+				if j+1 == len(trimmed) {
+					return i // 只有 # 的行也算标题
+				}
+			}
+		}
+	}
+
+	return -1
+}
+
+// InsertTOCAfterFirstHeading 在第一个标题后插入 TOC
+func (h *MarkerHandler) InsertTOCAfterFirstHeading(content []byte, toc string) []byte {
+	firstHeading := h.FindFirstHeading(content)
+	if firstHeading == -1 {
+		// 没有标题，在文件开头插入
+		firstHeading = -1
+	}
+
+	lines := bytes.Split(content, []byte("\n"))
+	var result [][]byte
+
+	insertLine := firstHeading // 在标题行后插入
+
+	for i, line := range lines {
+		result = append(result, line)
+		if i == insertLine {
+			// 在标题后插入空行 + 标记 + TOC + 标记
+			result = append(result, []byte(""))
+			result = append(result, []byte(h.marker))
+			result = append(result, []byte(""))
+			result = append(result, []byte(toc))
+			result = append(result, []byte(""))
+			result = append(result, []byte(h.marker))
+		}
+	}
+
+	// 如果没有找到标题 (firstHeading == -1)，在开头插入
+	if firstHeading == -1 {
+		var newResult [][]byte
+		newResult = append(newResult, []byte(h.marker))
+		newResult = append(newResult, []byte(""))
+		newResult = append(newResult, []byte(toc))
+		newResult = append(newResult, []byte(""))
+		newResult = append(newResult, []byte(h.marker))
+		newResult = append(newResult, []byte(""))
+		newResult = append(newResult, result...)
+		result = newResult
+	}
+
+	return bytes.Join(result, []byte("\n"))
+}
