@@ -27,7 +27,9 @@ export default defineConfig({
     // 本地搜索 - 使用 MiniSearch 实现浏览器内索引
     search: cfgSearch as DefaultTheme.Config["search"],
 
-    socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/vuejs/vitepress" },
+    ],
   },
 
   // Markdown 渲染配置 (从 ./config/markdown.ts 导入)
