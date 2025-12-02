@@ -30,9 +30,10 @@ type Section struct {
 // DefaultOptions 返回默认配置
 func DefaultOptions() Options {
 	return Options{
-		MinLevel: 1,
-		MaxLevel: 3,
-		Ordered:  false,
+		MinLevel:   1,
+		MaxLevel:   3,
+		Ordered:    false,
+		SectionTOC: true, // 默认启用章节模式：在每个 H1 下生成独立子目录
 	}
 }
 

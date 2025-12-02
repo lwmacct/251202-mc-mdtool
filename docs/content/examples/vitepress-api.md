@@ -2,14 +2,13 @@
 
 <!--TOC-->
 
-- [运行时 API 示例](#运行时-api-示例) `:1:17`
-  - [useData](#usedata) `:18:34`
-    - [返回值类型](#返回值类型) `:35:49`
-  - [useRoute](#useroute) `:50:65`
-  - [useRouter](#userouter) `:66:85`
-    - [路由器方法](#路由器方法) `:86:93`
-  - [$frontmatter](#frontmatter) `:94:110`
-  - [更多](#更多) `:111:113`
+- [useData](#usedata) `:17:33`
+  - [返回值类型](#返回值类型) `:34:48`
+- [useRoute](#useroute) `:49:64`
+- [useRouter](#userouter) `:65:84`
+  - [路由器方法](#路由器方法) `:85:92`
+- [$frontmatter](#frontmatter) `:93:109`
+- [更多](#更多) `:110:112`
 
 <!--TOC-->
 
@@ -21,9 +20,9 @@
 
 ```vue
 <script setup>
-import { useData } from 'vitepress'
+import { useData } from "vitepress";
 
-const { site, page, theme, frontmatter } = useData()
+const { site, page, theme, frontmatter } = useData();
 </script>
 
 <template>
@@ -36,14 +35,14 @@ const { site, page, theme, frontmatter } = useData()
 
 ```ts
 interface VitePressData {
-  site: Ref<SiteData>           // 站点级别数据
-  page: Ref<PageData>           // 页面级别数据
-  theme: Ref<ThemeConfig>       // 主题配置
-  frontmatter: Ref<PageFrontmatter>  // 页面 frontmatter
-  title: Ref<string>            // 页面标题
-  description: Ref<string>      // 页面描述
-  lang: Ref<string>             // 当前语言
-  isDark: Ref<boolean>          // 是否为暗色模式
+  site: Ref<SiteData>; // 站点级别数据
+  page: Ref<PageData>; // 页面级别数据
+  theme: Ref<ThemeConfig>; // 主题配置
+  frontmatter: Ref<PageFrontmatter>; // 页面 frontmatter
+  title: Ref<string>; // 页面标题
+  description: Ref<string>; // 页面描述
+  lang: Ref<string>; // 当前语言
+  isDark: Ref<boolean>; // 是否为暗色模式
 }
 ```
 
@@ -53,9 +52,9 @@ interface VitePressData {
 
 ```vue
 <script setup>
-import { useRoute } from 'vitepress'
+import { useRoute } from "vitepress";
 
-const route = useRoute()
+const route = useRoute();
 </script>
 
 <template>
@@ -69,12 +68,12 @@ const route = useRoute()
 
 ```vue
 <script setup>
-import { useRouter } from 'vitepress'
+import { useRouter } from "vitepress";
 
-const router = useRouter()
+const router = useRouter();
 
 function navigate() {
-  router.go('/examples/markdown')
+  router.go("/examples/markdown");
 }
 </script>
 
@@ -85,9 +84,9 @@ function navigate() {
 
 ### 路由器方法
 
-| 方法 | 说明 |
-| ---- | ---- |
-| `go(href)` | 导航到指定 URL |
+| 方法                  | 说明             |
+| --------------------- | ---------------- |
+| `go(href)`            | 导航到指定 URL   |
 | `onBeforeRouteChange` | 路由变化前的钩子 |
 | `onAfterRouteChanged` | 路由变化后的钩子 |
 

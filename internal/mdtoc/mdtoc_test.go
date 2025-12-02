@@ -530,8 +530,8 @@ func TestDefaultOptions(t *testing.T) {
 	if opts.LineNumber {
 		t.Error("DefaultOptions().LineNumber should be false")
 	}
-	if opts.SectionTOC {
-		t.Error("DefaultOptions().SectionTOC should be false")
+	if !opts.SectionTOC {
+		t.Error("DefaultOptions().SectionTOC should be true (章节模式默认启用)")
 	}
 }
 

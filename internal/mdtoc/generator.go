@@ -70,8 +70,21 @@ func (g *Generator) Generate(headers []*Header) string {
 
 // GenerateSection 为单个章节生成 TOC (只包含子标题)
 // 章节模式下，每个 H1 后面只生成该章节的子目录
+// 要求：章节内至少包含一个 H2 才会生成 TOC
 func (g *Generator) GenerateSection(section *Section) string {
 	if section == nil || len(section.SubHeaders) == 0 {
+		return ""
+	}
+
+	// 检查是否至少有一个 H2 (章节必须包含 H2 才生成 TOC)
+	hasH2 := false
+	for _, h := range section.SubHeaders {
+		if h.Level == 2 {
+			hasH2 = true
+			break
+		}
+	}
+	if !hasH2 {
 		return ""
 	}
 

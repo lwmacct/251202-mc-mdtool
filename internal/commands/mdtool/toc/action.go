@@ -23,7 +23,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	ordered := cmd.Bool("ordered")
 	lineNumber := cmd.Bool("line-number")
 	showPath := cmd.Bool("path")
-	section := cmd.Bool("section")
+	globalMode := cmd.Bool("global")
 
 	// 验证层级参数
 	if minLevel < 1 || minLevel > 6 {
@@ -44,13 +44,14 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	// 创建基础选项
+	// 默认启用章节模式 (SectionTOC=true)，只有指定 --global 才使用全局模式
 	baseOpts := mdtoc.Options{
 		MinLevel:   int(minLevel),
 		MaxLevel:   int(maxLevel),
 		Ordered:    ordered,
 		LineNumber: lineNumber,
 		ShowPath:   showPath,
-		SectionTOC: section,
+		SectionTOC: !globalMode,
 	}
 
 	// 根据模式执行不同操作

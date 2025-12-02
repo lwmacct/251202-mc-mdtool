@@ -108,6 +108,7 @@ func (h *MarkerHandler) InsertTOC(content []byte, toc string) []byte {
 		}
 	} else {
 		// 两个标记：替换两个标记之间的内容
+		skipNextEmpty := false
 		for i, line := range lines {
 			if i < markers.StartLine {
 				result = append(result, line)
@@ -118,7 +119,14 @@ func (h *MarkerHandler) InsertTOC(content []byte, toc string) []byte {
 				result = append(result, []byte(""))
 			} else if i == markers.EndLine {
 				result = append(result, line)
+				skipNextEmpty = true // 标记：跳过结束标记后的第一个空行
 			} else if i > markers.EndLine {
+				// 跳过结束标记后紧跟的空行，避免空行累积
+				if skipNextEmpty && len(bytes.TrimSpace(line)) == 0 {
+					skipNextEmpty = false
+					continue
+				}
+				skipNextEmpty = false
 				result = append(result, line)
 			}
 			// 跳过 StartLine+1 到 EndLine-1 之间的内容
@@ -357,9 +365,18 @@ func (h *MarkerHandler) UpdateSectionTOCs(content []byte, sectionTOCs []SectionT
 	// 创建新内容，删除所有现有 TOC 块
 	var cleanedLines [][]byte
 	skipUntil := -1
+	skipNextEmpty := false
 	for i, line := range lines {
 		if i <= skipUntil {
 			continue
+		}
+
+		// 跳过 TOC 块结束后紧跟的空行，避免空行累积
+		if skipNextEmpty {
+			skipNextEmpty = false
+			if len(bytes.TrimSpace(line)) == 0 {
+				continue
+			}
 		}
 
 		// 检查是否是某个 TOC 块的开始
@@ -367,6 +384,7 @@ func (h *MarkerHandler) UpdateSectionTOCs(content []byte, sectionTOCs []SectionT
 		for _, block := range existingBlocks {
 			if i == block.startLine {
 				skipUntil = block.endLine
+				skipNextEmpty = true // 标记：跳过结束标记后的空行
 				isBlockStart = true
 				break
 			}

@@ -2,11 +2,10 @@
 
 <!--TOC-->
 
-- [Markdown 示例](#markdown-示例) `:1:14`
-  - [代码高亮](#代码高亮) `:15:44`
-  - [自定义容器](#自定义容器) `:45:92`
-  - [代码组](#代码组) `:93:150`
-  - [更多功能](#更多功能) `:151:160`
+- [代码高亮](#代码高亮) `:14:43`
+- [自定义容器](#自定义容器) `:44:91`
+- [代码组](#代码组) `:92:149`
+- [更多功能](#更多功能) `:150:159`
 
 <!--TOC-->
 
@@ -103,19 +102,19 @@ export default {
  */
 const config = {
   // ...
-}
+};
 
-export default config
+export default config;
 ```
 
 ```ts [config.ts]
-import type { UserConfig } from 'vitepress'
+import type { UserConfig } from "vitepress";
 
 const config: UserConfig = {
   // ...
-}
+};
 
-export default config
+export default config;
 ```
 
 :::
@@ -131,30 +130,30 @@ export default config
  */
 const config = {
   // ...
-}
+};
 
-export default config
+export default config;
 ```
 
 ```ts [config.ts]
-import type { UserConfig } from 'vitepress'
+import type { UserConfig } from "vitepress";
 
 const config: UserConfig = {
   // ...
-}
+};
 
-export default config
+export default config;
 ```
 
 :::
 
 ## 更多功能
 
-| 功能 | 支持 |
-| ---- | ---- |
-| 表格 | ✅ |
-| 链接 | ✅ |
-| Emoji | ✅ |
-| TOC | ✅ |
+| 功能  | 支持 |
+| ----- | ---- |
+| 表格  | ✅   |
+| 链接  | ✅   |
+| Emoji | ✅   |
+| TOC   | ✅   |
 
 更多语法请参考 [VitePress Markdown 文档](https://vitepress.dev/guide/markdown)

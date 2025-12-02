@@ -168,25 +168,80 @@ func TestGenerator_GenerateSection(t *testing.T) {
 
 func TestGenerator_GenerateSection_RelativeIndent(t *testing.T) {
 	// Test that section TOC uses relative indentation based on minimum level in section
+	// Note: Section must have at least one H2 to generate TOC
 	section := &Section{
 		Title: &Header{Level: 1, Text: "Chapter", AnchorLink: "chapter"},
 		SubHeaders: []*Header{
-			{Level: 3, Text: "H3 First", AnchorLink: "h3-first"},
-			{Level: 4, Text: "H4 Under", AnchorLink: "h4-under"},
-			{Level: 3, Text: "H3 Second", AnchorLink: "h3-second"},
+			{Level: 2, Text: "H2 First", AnchorLink: "h2-first"},
+			{Level: 3, Text: "H3 Under", AnchorLink: "h3-under"},
+			{Level: 4, Text: "H4 Deep", AnchorLink: "h4-deep"},
+			{Level: 2, Text: "H2 Second", AnchorLink: "h2-second"},
 		},
 	}
 
 	g := NewGenerator(Options{MinLevel: 1, MaxLevel: 6})
 	got := g.GenerateSection(section)
 
-	// H3 should be at root level (no indent), H4 should be indented by 2
-	expected := `- [H3 First](#h3-first)
-  - [H4 Under](#h4-under)
-- [H3 Second](#h3-second)`
+	// H2 should be at root level (no indent), H3 indented by 2, H4 by 4
+	expected := `- [H2 First](#h2-first)
+  - [H3 Under](#h3-under)
+    - [H4 Deep](#h4-deep)
+- [H2 Second](#h2-second)`
 
 	if got != expected {
 		t.Errorf("GenerateSection() relative indent =\n%s\nwant:\n%s", got, expected)
+	}
+}
+
+func TestGenerator_GenerateSection_RequiresH2(t *testing.T) {
+	tests := []struct {
+		name     string
+		section  *Section
+		expected string
+	}{
+		{
+			name: "section with only H3 (no H2) - should be empty",
+			section: &Section{
+				Title: &Header{Level: 1, Text: "Chapter", AnchorLink: "chapter"},
+				SubHeaders: []*Header{
+					{Level: 3, Text: "H3 Only", AnchorLink: "h3-only"},
+					{Level: 4, Text: "H4 Under", AnchorLink: "h4-under"},
+				},
+			},
+			expected: "",
+		},
+		{
+			name: "section with H2 - should generate TOC",
+			section: &Section{
+				Title: &Header{Level: 1, Text: "Chapter", AnchorLink: "chapter"},
+				SubHeaders: []*Header{
+					{Level: 2, Text: "Section", AnchorLink: "section"},
+					{Level: 3, Text: "Subsection", AnchorLink: "subsection"},
+				},
+			},
+			expected: "- [Section](#section)\n  - [Subsection](#subsection)",
+		},
+		{
+			name: "section with only H4+ (no H2) - should be empty",
+			section: &Section{
+				Title: &Header{Level: 1, Text: "Chapter", AnchorLink: "chapter"},
+				SubHeaders: []*Header{
+					{Level: 4, Text: "Deep Header", AnchorLink: "deep-header"},
+					{Level: 5, Text: "Deeper Header", AnchorLink: "deeper-header"},
+				},
+			},
+			expected: "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGenerator(Options{MinLevel: 2, MaxLevel: 6})
+			got := g.GenerateSection(tt.section)
+			if got != tt.expected {
+				t.Errorf("GenerateSection() =\n%q\nwant:\n%q", got, tt.expected)
+			}
+		})
 	}
 }
 

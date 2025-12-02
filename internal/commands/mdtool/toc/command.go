@@ -50,9 +50,9 @@ func Command() *cli.Command {
 				Usage:   "显示文件路径 (path:start:end)",
 			},
 			&cli.BoolFlag{
-				Name:    "section",
-				Aliases: []string{"s"},
-				Usage:   "章节模式: 在每个 H1 后生成独立的子目录",
+				Name:    "global",
+				Aliases: []string{"g"},
+				Usage:   "全局模式: 生成完整文档的单一目录 (默认为章节模式)",
 			},
 		},
 		Action: action,
