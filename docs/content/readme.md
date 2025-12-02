@@ -109,7 +109,9 @@ go build ./cmd/mc-mdtool/
 
 ## 设计文档
 
-- [开发计划](docs/content/mdtoc-design.md)
+- [toc 命令设计](design/cmd-toc.md)
+- [fmt 命令设计](design/cmd-fmt.md)
+- [解析器参考](design/ref-parsers.md)
 
 ## 参考项目
 

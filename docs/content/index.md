@@ -1,11 +1,5 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
-
-<!--TOC-->
-
-- [https://vitepress.dev/reference/default-theme-home-page](#httpsvitepressdevreferencedefault-theme-home-page) `:2:34`
-
-<!--TOC-->
 layout: home
 
 hero:
@@ -18,7 +12,7 @@ hero:
       link: /guide/quick-start
     - theme: alt
       text: 设计文档
-      link: /design/mdtoc-design
+      link: /design/cmd-toc
 
 features:
   - title: toc - 目录生成
