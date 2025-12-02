@@ -12,11 +12,13 @@ type Header struct {
 
 // Options 配置 TOC 生成选项
 type Options struct {
-	MinLevel   int  // 最小标题层级 (默认 1)
-	MaxLevel   int  // 最大标题层级 (默认 3)
-	Ordered    bool // 使用有序列表
-	LineNumber bool // 显示行号范围 (:start-end)
-	SectionTOC bool // 章节模式：每个 H1 后生成独立的子目录
+	MinLevel   int    // 最小标题层级 (默认 1)
+	MaxLevel   int    // 最大标题层级 (默认 3)
+	Ordered    bool   // 使用有序列表
+	LineNumber bool   // 显示行号范围 (:start:end)
+	ShowPath   bool   // 显示文件路径 (path:start:end)
+	FilePath   string // 当前处理的文件路径
+	SectionTOC bool   // 章节模式：每个 H1 后生成独立的子目录
 }
 
 // Section 表示一个章节 (H1 及其子标题)

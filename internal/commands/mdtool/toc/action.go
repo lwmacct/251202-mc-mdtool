@@ -22,6 +22,7 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	diff := cmd.Bool("diff")
 	ordered := cmd.Bool("ordered")
 	lineNumber := cmd.Bool("line-number")
+	showPath := cmd.Bool("path")
 	section := cmd.Bool("section")
 
 	// 验证层级参数
@@ -38,26 +39,28 @@ func action(ctx context.Context, cmd *cli.Command) error {
 	// 收集要处理的文件
 	files := collectFiles(cmd.Args().Slice())
 	if len(files) == 0 {
-		return fmt.Errorf("请指定要处理的 Markdown 文件")
+		// 无文件时显示帮助
+		return cli.ShowSubcommandHelp(cmd)
 	}
 
-	// 创建 TOC 实例
-	toc := mdtoc.New(mdtoc.Options{
+	// 创建基础选项
+	baseOpts := mdtoc.Options{
 		MinLevel:   int(minLevel),
 		MaxLevel:   int(maxLevel),
 		Ordered:    ordered,
 		LineNumber: lineNumber,
+		ShowPath:   showPath,
 		SectionTOC: section,
-	})
+	}
 
 	// 根据模式执行不同操作
 	switch {
 	case diff:
-		return processDiff(toc, files)
+		return processDiff(mdtoc.New(baseOpts), files)
 	case inPlace:
-		return processInPlace(toc, files)
+		return processInPlace(mdtoc.New(baseOpts), files)
 	default:
-		return processStdout(toc, files, section)
+		return processStdout(baseOpts, files)
 	}
 }
 
@@ -159,17 +162,22 @@ func processInPlace(toc *mdtoc.TOC, files []string) error {
 }
 
 // processStdout 输出到 stdout 模式
-func processStdout(toc *mdtoc.TOC, files []string, sectionMode bool) error {
+func processStdout(baseOpts mdtoc.Options, files []string) error {
 	for i, file := range files {
 		if err := checkFileExists(file); err != nil {
 			fmt.Fprintf(os.Stderr, "%s: %v\n", file, err)
 			continue
 		}
 
+		// 为每个文件创建带有文件路径的 TOC 实例
+		opts := baseOpts
+		opts.FilePath = file
+		toc := mdtoc.New(opts)
+
 		var tocStr string
 		var err error
 
-		if sectionMode {
+		if opts.SectionTOC {
 			// 章节模式：预览每个 H1 的子目录
 			content, readErr := os.ReadFile(file)
 			if readErr != nil {

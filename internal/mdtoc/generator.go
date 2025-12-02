@@ -48,7 +48,11 @@ func (g *Generator) Generate(headers []*Header) string {
 
 		// 添加行号范围 (VS Code 兼容格式)
 		if g.options.LineNumber && h.Line > 0 {
-			link += " `:" + itoa(h.Line) + "-" + itoa(h.EndLine) + "`"
+			if g.options.ShowPath && g.options.FilePath != "" {
+				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+			} else {
+				link += " `:" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+			}
 		}
 
 		// 生成 TOC 行
@@ -112,7 +116,11 @@ func (g *Generator) GenerateSection(section *Section) string {
 
 		link := "[" + h.Text + "](#" + h.AnchorLink + ")"
 		if g.options.LineNumber && h.Line > 0 {
-			link += " `:" + itoa(h.Line) + "-" + itoa(h.EndLine) + "`"
+			if g.options.ShowPath && g.options.FilePath != "" {
+				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+			} else {
+				link += " `:" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+			}
 		}
 
 		line := indentStr + marker + " " + link

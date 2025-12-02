@@ -31,8 +31,16 @@ mc-mdtool toc --help
 # 生成 TOC 到 stdout
 mc-mdtool toc README.md
 
-# 显示行号范围 (VS Code 兼容格式)
-mc-mdtool toc -L README.md
+# 显示行号范围 (默认启用, VS Code 兼容格式)
+mc-mdtool toc README.md
+# 输出: - [标题](#标题) `:1:10`
+
+# 显示文件路径 + 行号范围
+mc-mdtool toc -p README.md
+# 输出: - [标题](#标题) `README.md:1:10`
+
+# 禁用行号范围
+mc-mdtool toc -L=false README.md
 
 # 原地更新文件 (在 <!--TOC--> 标记处插入)
 mc-mdtool toc -i README.md
@@ -54,14 +62,16 @@ find . -name "*.md" | mc-mdtool toc -i
 
 ### toc 命令选项
 
-| 选项            | 短选项 | 说明                      |
-| --------------- | ------ | ------------------------- |
-| `--min-level`   | `-m`   | 最小标题层级 (默认 1)     |
-| `--max-level`   | `-M`   | 最大标题层级 (默认 3)     |
-| `--in-place`    | `-i`   | 原地更新文件              |
-| `--diff`        | `-d`   | 检查是否需要更新          |
-| `--ordered`     | `-o`   | 使用有序列表              |
-| `--line-number` | `-L`   | 显示行号范围 `:start-end` |
+| 选项            | 短选项 | 说明                               |
+| --------------- | ------ | ---------------------------------- |
+| `--min-level`   | `-m`   | 最小标题层级 (默认 1)              |
+| `--max-level`   | `-M`   | 最大标题层级 (默认 3)              |
+| `--in-place`    | `-i`   | 原地更新文件                       |
+| `--diff`        | `-d`   | 检查是否需要更新                   |
+| `--ordered`     | `-o`   | 使用有序列表                       |
+| `--line-number` | `-L`   | 显示行号范围 `:start:end` (默认启用) |
+| `--path`        | `-p`   | 显示文件路径 `path:start:end`      |
+| `--section`     | `-s`   | 章节模式: 每个 H1 后生成独立子目录 |
 
 ## 开发
 

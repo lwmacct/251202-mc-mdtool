@@ -7,6 +7,8 @@ func Command() *cli.Command {
 	return &cli.Command{
 		Name:    "toc",
 		Usage:   "生成 Markdown 目录 (Table of Contents)",
+		UsageText: `mc-mdtool toc [options] <file>...
+   fd -e md | mc-mdtool toc`,
 		Aliases: []string{"t"},
 		Flags: []cli.Flag{
 			&cli.IntFlag{
@@ -39,7 +41,13 @@ func Command() *cli.Command {
 			&cli.BoolFlag{
 				Name:    "line-number",
 				Aliases: []string{"L"},
-				Usage:   "显示行号范围 (:start-end)",
+				Value:   true,
+				Usage:   "显示行号范围 (:start:end)",
+			},
+			&cli.BoolFlag{
+				Name:    "path",
+				Aliases: []string{"p"},
+				Usage:   "显示文件路径 (path:start:end)",
 			},
 			&cli.BoolFlag{
 				Name:    "section",
