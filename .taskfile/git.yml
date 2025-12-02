@@ -21,7 +21,11 @@ tasks:
     cmds:
       - |
         git add --all
-        git commit -m '{{.CLI_ARGS | default "Unimportant"}}' || true
+        # 尝试提交，如果 pre-commit hook 修复了文件则自动重试
+        if ! git commit -m '{{.CLI_ARGS | default "Unimportant"}}'; then
+          git add --all
+          git commit -m '{{.CLI_ARGS | default "Unimportant"}}' || true
+        fi
         git push || true
 
   tag:next:
