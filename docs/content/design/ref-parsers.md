@@ -1,5 +1,29 @@
 # Markdown 解析器调研
 
+<!--TOC-->
+
+- [Markdown 解析器调研](#markdown-解析器调研) `:1:26`
+  - [1. 规范标准](#1-规范标准) `:27:28`
+    - [1.1 CommonMark](#11-commonmark) `:29:38`
+    - [1.2 GFM (GitHub Flavored Markdown)](#12-gfm-github-flavored-markdown) `:39:50`
+  - [2. 主流解析器对比](#2-主流解析器对比) `:51:52`
+    - [2.1 按语言分类](#21-按语言分类) `:53:70`
+    - [2.2 框架使用情况](#22-框架使用情况) `:71:88`
+  - [3. Go 生态解析器详细对比](#3-go-生态解析器详细对比) `:89:90`
+    - [3.1 goldmark vs blackfriday](#31-goldmark-vs-blackfriday) `:91:101`
+    - [3.2 goldmark 性能](#32-goldmark-性能) `:102:111`
+    - [3.3 goldmark 扩展](#33-goldmark-扩展) `:112:133`
+  - [4. 我们的选择](#4-我们的选择) `:134:135`
+    - [4.1 决策：goldmark](#41-决策goldmark) `:136:146`
+    - [4.2 GitHub Anchor Link 规则](#42-github-anchor-link-规则) `:147:173`
+    - [4.3 参考实现](#43-参考实现) `:174:181`
+  - [5. 未来扩展](#5-未来扩展) `:182:183`
+    - [5.1 VitePress 支持 (P2)](#51-vitepress-支持-p2) `:184:194`
+    - [5.2 Hugo 支持 (P2)](#52-hugo-支持-p2) `:195:208`
+  - [6. 参考资料](#6-参考资料) `:209:215`
+
+<!--TOC-->
+
 ## 1. 规范标准
 
 ### 1.1 CommonMark

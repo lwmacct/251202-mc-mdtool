@@ -1,5 +1,11 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
+
+<!--TOC-->
+
+- [https://vitepress.dev/reference/default-theme-home-page](#httpsvitepressdevreferencedefault-theme-home-page) `:2:34`
+
+<!--TOC-->
 layout: home
 
 hero:
