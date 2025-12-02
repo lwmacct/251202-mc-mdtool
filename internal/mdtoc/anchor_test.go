@@ -60,6 +60,11 @@ func TestAnchorGenerator_Generate(t *testing.T) {
 			input:    "  Hello World  ",
 			expected: "hello-world",
 		},
+		{
+			name:     "with underscores",
+			input:    "m_250428_dmi_chassis_height",
+			expected: "m_250428_dmi_chassis_height",
+		},
 	}
 
 	for _, tt := range tests {

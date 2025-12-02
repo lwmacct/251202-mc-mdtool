@@ -63,14 +63,15 @@ func removeHTMLTags(s string) string {
 
 // removeEmphasis 移除 Markdown 强调符号
 func removeEmphasis(s string) string {
-	// 移除 **, *, __, _, ~~, `
+	// 移除 **, *, __, ~~, `
+	// 注意: 下划线斜体 _text_ 只在下划线位于单词边界时生效
 	patterns := []string{
-		`\*\*(.+?)\*\*`, // **bold**
-		`\*(.+?)\*`,     // *italic*
-		`__(.+?)__`,     // __bold__
-		`_(.+?)_`,       // _italic_
-		`~~(.+?)~~`,     // ~~strikethrough~~
-		"`(.+?)`",       // `code`
+		`\*\*(.+?)\*\*`,            // **bold**
+		`\*(.+?)\*`,                // *italic*
+		`__(.+?)__`,                // __bold__
+		`(?:^|[\s])_([^_]+?)_(?:[\s]|$)`, // _italic_ (只匹配单词边界的下划线)
+		`~~(.+?)~~`,                // ~~strikethrough~~
+		"`(.+?)`",                  // `code`
 	}
 
 	result := s
@@ -90,11 +91,11 @@ func removeEmphasis(s string) string {
 	return result
 }
 
-// filterCharacters 保留 Unicode 字母、数字、连字符、空格
+// filterCharacters 保留 Unicode 字母、数字、连字符、下划线、空格
 func filterCharacters(s string) string {
 	var result strings.Builder
 	for _, r := range s {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == ' ' {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) || r == '-' || r == '_' || r == ' ' {
 			result.WriteRune(r)
 		}
 	}
