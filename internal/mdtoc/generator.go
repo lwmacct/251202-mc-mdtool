@@ -43,12 +43,12 @@ func (g *Generator) Generate(headers []*Header) string {
 			marker = "-"
 		}
 
-		// 生成链接或纯文本
+		// 生成链接：ShowAnchor 控制是否包含 (#anchor) 部分
 		var link string
 		if g.options.ShowAnchor {
 			link = "[" + h.Text + "](#" + h.AnchorLink + ")"
 		} else {
-			link = h.Text
+			link = "[" + h.Text + "]"
 		}
 
 		// 添加行号范围 (VS Code 兼容格式)
@@ -136,7 +136,7 @@ func (g *Generator) GenerateSection(section *Section) string {
 		if g.options.ShowAnchor {
 			link = "[" + h.Text + "](#" + h.AnchorLink + ")"
 		} else {
-			link = h.Text
+			link = "[" + h.Text + "]"
 		}
 		if g.options.LineNumber && h.Line > 0 {
 			if g.options.ShowPath && g.options.FilePath != "" {

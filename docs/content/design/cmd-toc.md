@@ -58,9 +58,9 @@ Options:
 ## 输出格式
 
 ```shell
-# 默认输出 (预览模式不显示锚点链接)
+# 默认输出 (预览模式不显示锚点)
 mc-mdtool toc README.md
-# - 标题 `:1:10`
+# - [标题] `:1:10`
 
 # 显示锚点链接
 mc-mdtool toc -a README.md
