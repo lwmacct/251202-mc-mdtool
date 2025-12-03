@@ -8,20 +8,8 @@ func Command(version string) *cli.Command {
 		Name:    "mc-mdtoc",
 		Usage:   "Markdown TOC 生成工具",
 		Version: version,
-		Commands: []*cli.Command{
-			tocCommand(),
-		},
-	}
-}
-
-// tocCommand 返回 toc 子命令
-func tocCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "toc",
-		Usage: "生成 Markdown 目录 (Table of Contents)",
-		UsageText: `mc-mdtoc toc [options] <file>...
-   fd -e md | mc-mdtoc toc`,
-		Aliases: []string{"t"},
+		UsageText: `mc-mdtoc [options] <file>...
+   fd -e md | mc-mdtoc`,
 		Flags: []cli.Flag{
 			&cli.IntFlag{
 				Name:    "min-level",
