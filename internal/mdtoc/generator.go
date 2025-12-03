@@ -1,6 +1,7 @@
 package mdtoc
 
 import (
+	"strconv"
 	"strings"
 )
 
@@ -21,57 +22,7 @@ func (g *Generator) Generate(headers []*Header) string {
 	if len(headers) == 0 {
 		return ""
 	}
-
-	var sb strings.Builder
-	orderedCounters := make(map[int]int) // 每个层级的有序列表计数器
-
-	for i, h := range headers {
-		// 计算缩进 (相对于最小层级)
-		indent := (h.Level - g.options.MinLevel) * 2
-		indentStr := strings.Repeat(" ", indent)
-
-		// 生成列表标记
-		var marker string
-		if g.options.Ordered {
-			orderedCounters[h.Level]++
-			// 重置更深层级的计数器
-			for level := h.Level + 1; level <= 6; level++ {
-				orderedCounters[level] = 0
-			}
-			marker = itoa(orderedCounters[h.Level]) + "."
-		} else {
-			marker = "-"
-		}
-
-		// 生成链接：ShowAnchor 控制是否包含 (#anchor) 部分
-		var link string
-		if g.options.ShowAnchor {
-			link = "[" + h.Text + "](#" + h.AnchorLink + ")"
-		} else {
-			link = "[" + h.Text + "]"
-		}
-
-		// 添加行号范围 (LLM 友好格式: :start+count)
-		if g.options.LineNumber && h.Line > 0 {
-			count := h.EndLine - h.Line + 1
-			if g.options.ShowPath && g.options.FilePath != "" {
-				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + "+" + itoa(count) + "`"
-			} else {
-				link += " `:" + itoa(h.Line) + "+" + itoa(count) + "`"
-			}
-		}
-
-		// 生成 TOC 行
-		line := indentStr + marker + " " + link
-		sb.WriteString(line)
-
-		// 除最后一行外添加换行符
-		if i < len(headers)-1 {
-			sb.WriteString("\n")
-		}
-	}
-
-	return sb.String()
+	return g.generateTOC(headers, g.options.MinLevel)
 }
 
 // GenerateSection 为单个章节生成 TOC (只包含子标题)
@@ -106,9 +57,6 @@ func (g *Generator) GenerateSection(section *Section) string {
 		return ""
 	}
 
-	var sb strings.Builder
-	orderedCounters := make(map[int]int)
-
 	// 找到最小层级作为基准 (章节模式下通常是 H2)
 	minLevel := 6
 	for _, h := range filteredHeaders {
@@ -117,41 +65,57 @@ func (g *Generator) GenerateSection(section *Section) string {
 		}
 	}
 
-	for i, h := range filteredHeaders {
-		// 计算缩进 (相对于章节内最小层级)
-		indent := (h.Level - minLevel) * 2
+	return g.generateTOC(filteredHeaders, minLevel)
+}
+
+// generateTOC 生成 TOC 字符串的内部实现
+// baseLevel 用于计算缩进的基准层级
+func (g *Generator) generateTOC(headers []*Header, baseLevel int) string {
+	var sb strings.Builder
+	orderedCounters := make(map[int]int)
+
+	for i, h := range headers {
+		// 计算缩进 (相对于基准层级)
+		indent := (h.Level - baseLevel) * 2
 		indentStr := strings.Repeat(" ", indent)
 
+		// 生成列表标记
 		var marker string
 		if g.options.Ordered {
 			orderedCounters[h.Level]++
+			// 重置更深层级的计数器
 			for level := h.Level + 1; level <= 6; level++ {
 				orderedCounters[level] = 0
 			}
-			marker = itoa(orderedCounters[h.Level]) + "."
+			marker = strconv.Itoa(orderedCounters[h.Level]) + "."
 		} else {
 			marker = "-"
 		}
 
+		// 生成链接：ShowAnchor 控制是否包含 (#anchor) 部分
 		var link string
 		if g.options.ShowAnchor {
 			link = "[" + h.Text + "](#" + h.AnchorLink + ")"
 		} else {
 			link = "[" + h.Text + "]"
 		}
+
+		// 添加行号范围 (LLM 友好格式: :start+count)
 		if g.options.LineNumber && h.Line > 0 {
 			count := h.EndLine - h.Line + 1
 			if g.options.ShowPath && g.options.FilePath != "" {
-				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + "+" + itoa(count) + "`"
+				link += " `" + g.options.FilePath + ":" + strconv.Itoa(h.Line) + "+" + strconv.Itoa(count) + "`"
 			} else {
-				link += " `:" + itoa(h.Line) + "+" + itoa(count) + "`"
+				link += " `:" + strconv.Itoa(h.Line) + "+" + strconv.Itoa(count) + "`"
 			}
 		}
 
+		// 生成 TOC 行
 		line := indentStr + marker + " " + link
 		sb.WriteString(line)
 
-		if i < len(filteredHeaders)-1 {
+		// 除最后一行外添加换行符
+		if i < len(headers)-1 {
 			sb.WriteString("\n")
 		}
 	}

@@ -359,7 +359,7 @@ func (h *MarkerHandler) UpdateSectionTOCs(content []byte, sectionTOCs []SectionT
 	}
 	var existingBlocks []tocBlock
 
-	var pendingStart int = -1
+	var pendingStart = -1
 	for i, line := range lines {
 		trimmed := bytes.TrimSpace(line)
 		if bytes.Equal(trimmed, markerBytes) {
@@ -483,9 +483,8 @@ func (h *MarkerHandler) CleanTOCBlocks(content []byte) ([]byte, []TOCBlockInfo) 
 		}
 
 		blockInfos = append(blockInfos, TOCBlockInfo{
-			StartLine:  block.startLine,
-			EndLine:    block.endLine,
-			TotalLines: len(deleteLines),
+			StartLine: block.startLine,
+			EndLine:   block.endLine,
 		})
 	}
 
@@ -502,9 +501,8 @@ func (h *MarkerHandler) CleanTOCBlocks(content []byte) ([]byte, []TOCBlockInfo) 
 
 // TOCBlockInfo 记录 TOC 块的位置信息
 type TOCBlockInfo struct {
-	StartLine  int // 开始行 (0-based)
-	EndLine    int // 结束行 (0-based)
-	TotalLines int // 块占用的总行数（包括前后空行）
+	StartLine int // 开始行 (0-based)
+	EndLine   int // 结束行 (0-based)
 }
 
 // CalcTOCBlockLines 计算插入一个 TOC 块会增加多少行

@@ -1,7 +1,6 @@
 package mdtoc
 
 import (
-	"bytes"
 	"os"
 	"strings"
 )
@@ -68,8 +67,8 @@ func (t *TOC) GenerateSectionTOCs(content []byte) ([]SectionTOC, error) {
 	return sectionTOCs, nil
 }
 
-// GenerateSectionTOCsWithOffset 生成章节模式的 TOC，预计算偏移量使行号一次正确
-// 这个方法解决了需要执行两次 toc 命令才能得到正确行号的问题
+// GenerateSectionTOCsWithOffset 生成章节模式的 TOC，预计算偏移量使行号正确
+// 在干净内容（已移除旧 TOC）上解析标题，计算 TOC 插入后的正确行号
 func (t *TOC) GenerateSectionTOCsWithOffset(cleanContent []byte) ([]SectionTOC, error) {
 	// 在干净内容上解析所有标题（基准行号）
 	headers, err := t.parser.ParseAllHeaders(cleanContent)
@@ -80,74 +79,75 @@ func (t *TOC) GenerateSectionTOCsWithOffset(cleanContent []byte) ([]SectionTOC, 
 	// 按 H1 分割成章节
 	sections := SplitSections(headers)
 
-	// 第一遍：计算每个章节的 TOC 内容行数
+	// 第一遍：临时禁用行号，计算每个 TOC 块的行数
+	origLineNumber := t.options.LineNumber
+	t.options.LineNumber = false
+	tempGenerator := NewGenerator(t.options)
+
 	type sectionInfo struct {
-		section   *Section
-		tocLines  int    // TOC 内容行数
-		tocString string // TOC 字符串（不带行号的临时版本）
+		section      *Section
+		tocLines     int // TOC 块总行数
+		originalLine int // H1 在干净内容中的原始行号 (0-based)
 	}
 	var infos []sectionInfo
 
-	// 临时禁用行号生成，只计算 TOC 结构
-	origLineNumber := t.options.LineNumber
-	t.options.LineNumber = false
-	t.generator = NewGenerator(t.options)
-
 	for _, section := range sections {
-		toc := t.generator.GenerateSection(section)
+		toc := tempGenerator.GenerateSection(section)
 		if toc != "" {
-			tocLines := strings.Count(toc, "\n") + 1
+			tocBlockLines := CalcTOCBlockLines(toc)
 			infos = append(infos, sectionInfo{
-				section:   section,
-				tocLines:  tocLines,
-				tocString: toc,
+				section:      section,
+				tocLines:     tocBlockLines,
+				originalLine: section.Title.Line - 1, // 转换为 0-based
 			})
 		}
 	}
 
 	// 恢复行号设置
 	t.options.LineNumber = origLineNumber
-	t.generator = NewGenerator(t.options)
 
-	// 将干净内容按行分割，用于检查 H1 后是否有空行
-	cleanLines := bytes.Split(cleanContent, []byte("\n"))
-
-	// 第二遍：计算累积偏移量并应用到标题行号
+	// 第二遍：计算累积偏移量并生成带正确行号的 TOC
 	var sectionTOCs []SectionTOC
 	cumulativeOffset := 0
 
 	for _, info := range infos {
-		// 计算这个 TOC 块会增加的行数
-		tocBlockLines := CalcTOCBlockLines(info.tocString)
+		// H1 标题使用累积偏移量（之前所有 TOC 块的影响）
+		// 子标题使用累积偏移量 + 当前 TOC 块的行数（因为 TOC 插入在 H1 后、子标题前）
+		subHeaderOffset := cumulativeOffset + info.tocLines
 
-		// 保存原始 H1 行号（在干净内容中的位置，用于插入定位）
-		originalH1Line := info.section.Title.Line
-
-		// 检查 H1 后是否有空行（会被 InsertSectionTOCs 跳过）
-		h1LineIdx := originalH1Line - 1 // 转换为 0-based
-		hasEmptyLineAfterH1 := h1LineIdx+1 < len(cleanLines) && len(bytes.TrimSpace(cleanLines[h1LineIdx+1])) == 0
-
-		// 实际增加的行数：TOC 块行数 - 1（如果 H1 后有空行被跳过）
-		actualAddedLines := tocBlockLines
-		if hasEmptyLineAfterH1 {
-			actualAddedLines-- // 跳过了 H1 后的空行
+		adjustedSection := &Section{
+			Title:      adjustHeader(info.section.Title, cumulativeOffset),
+			SubHeaders: make([]*Header, len(info.section.SubHeaders)),
+		}
+		for i, h := range info.section.SubHeaders {
+			adjustedSection.SubHeaders[i] = adjustHeader(h, subHeaderOffset)
 		}
 
-		// 生成 TOC (使用原始行号，不调整)
-		// 保留原始行号可以让用户看到内容在原始文件中的位置
-		toc := t.generator.GenerateSection(info.section)
+		// 用调整后的行号生成 TOC
+		toc := t.generator.GenerateSection(adjustedSection)
 		if toc != "" {
 			sectionTOCs = append(sectionTOCs, SectionTOC{
-				H1Line: originalH1Line - 1, // 使用干净内容中的行号（0-based），用于定位插入位置
+				H1Line: info.originalLine, // 使用原始行号定位插入位置
 				TOC:    toc,
 			})
 		}
 
-		// 累加偏移量
-		cumulativeOffset += actualAddedLines
+		// 累加偏移量（当前 TOC 块会增加的行数）
+		cumulativeOffset += info.tocLines
 	}
 
 	return sectionTOCs, nil
+}
+
+// adjustHeader 创建调整行号后的 Header 副本
+func adjustHeader(h *Header, offset int) *Header {
+	return &Header{
+		Level:      h.Level,
+		Text:       h.Text,
+		AnchorLink: h.AnchorLink,
+		Line:       h.Line + offset,
+		EndLine:    h.EndLine + offset,
+	}
 }
 
 // GenerateSectionTOCsPreview 生成章节模式的 TOC 预览 (用于 stdout 输出)

@@ -266,12 +266,16 @@ func TestTOC_FileOperations(t *testing.T) {
 		// 有标记的文件
 		withMarker := "# Title\n<!--TOC-->\n## Section"
 		withPath := filepath.Join(tmpDir, "with_marker.md")
-		os.WriteFile(withPath, []byte(withMarker), 0644)
+		if err := os.WriteFile(withPath, []byte(withMarker), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		// 无标记的文件
 		withoutMarker := "# Title\n## Section"
 		withoutPath := filepath.Join(tmpDir, "without_marker.md")
-		os.WriteFile(withoutPath, []byte(withoutMarker), 0644)
+		if err := os.WriteFile(withoutPath, []byte(withoutMarker), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		toc := mdtoc.New(mdtoc.DefaultOptions())
 
@@ -306,7 +310,9 @@ Old TOC content
 ## Section 2
 `
 		filePath := filepath.Join(tmpDir, "update_with_marker.md")
-		os.WriteFile(filePath, []byte(content), 0644)
+		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		toc := mdtoc.New(mdtoc.DefaultOptions())
 		if err := toc.UpdateFile(filePath); err != nil {
@@ -332,7 +338,9 @@ Old TOC content
 ## Section 2
 `
 		filePath := filepath.Join(tmpDir, "update_without_marker.md")
-		os.WriteFile(filePath, []byte(content), 0644)
+		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		toc := mdtoc.New(mdtoc.DefaultOptions())
 		if err := toc.UpdateFile(filePath); err != nil {
@@ -361,7 +369,9 @@ Old TOC content
 ## Section 2.1
 `
 		filePath := filepath.Join(tmpDir, "update_section_mode.md")
-		os.WriteFile(filePath, []byte(content), 0644)
+		if err := os.WriteFile(filePath, []byte(content), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		toc := mdtoc.New(mdtoc.Options{
 			MinLevel:   2,
@@ -631,11 +641,11 @@ func TestDefaultOptions(t *testing.T) {
 func BenchmarkTOC_Generate(b *testing.B) {
 	// 构造一个较大的文档
 	var sb strings.Builder
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		sb.WriteString("# Chapter ")
 		sb.WriteString(string(rune('A' + i%26)))
 		sb.WriteString("\n\n")
-		for j := 0; j < 10; j++ {
+		for j := range 10 {
 			sb.WriteString("## Section ")
 			sb.WriteString(string(rune('0' + j)))
 			sb.WriteString("\n\nContent here...\n\n")
@@ -646,7 +656,7 @@ func BenchmarkTOC_Generate(b *testing.B) {
 	toc := mdtoc.New(mdtoc.DefaultOptions())
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_, _ = toc.GenerateFromContent(content)
 	}
 }
@@ -773,9 +783,10 @@ Content here
 ## Section 1.2
 More content
 `,
-			// In section mode, only sub-headers get line numbers
-			// Section 1.1 at line 7, Section 1.2 at line 10
-			expectedLineNums: []string{`:7+`, `:10+`},
+			// Line numbers reflect FINAL file (after TOC insertion)
+			// TOC block adds ~8 lines (空行+标记+空行+内容+空行+标记+空行)
+			// Section 1.1 at line 15, Section 1.2 at line 18
+			expectedLineNums: []string{`:15+`, `:18+`},
 		},
 		{
 			name: "frontmatter with YAML comment should not affect line numbers",
@@ -791,8 +802,9 @@ First section content
 ## Section B
 Second section content
 `,
-			// Section A at line 7, Section B at line 10
-			expectedLineNums: []string{`:7+`, `:10+`},
+			// Line numbers reflect FINAL file (after TOC insertion)
+			// Section A at line 15, Section B at line 18
+			expectedLineNums: []string{`:15+`, `:18+`},
 		},
 	}
 

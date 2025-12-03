@@ -2,8 +2,23 @@ package mdtoc
 
 import (
 	"regexp"
+	"strconv"
 	"strings"
 	"unicode"
+)
+
+// 预编译的正则表达式（程序启动时只编译一次）
+var (
+	htmlTagRe      = regexp.MustCompile(`<[^>]*>`)
+	hyphensRe      = regexp.MustCompile(`-+`)
+	boldDoubleRe   = regexp.MustCompile(`\*\*(.+?)\*\*`)
+	italicStarRe   = regexp.MustCompile(`\*(.+?)\*`)
+	boldUnderRe    = regexp.MustCompile(`__(.+?)__`)
+	italicUnderRe  = regexp.MustCompile(`(?:^|[\s])_([^_]+?)_(?:[\s]|$)`)
+	strikeRe       = regexp.MustCompile(`~~(.+?)~~`)
+	codeRe         = regexp.MustCompile("`(.+?)`")
+	linkRe         = regexp.MustCompile(`\[([^\]]+)\]\([^)]+\)`)
+	imgRe          = regexp.MustCompile(`!\[([^\]]*)\]\([^)]+\)`)
 )
 
 // AnchorGenerator 生成 GitHub 风格的 anchor link
@@ -57,35 +72,25 @@ func (g *AnchorGenerator) Generate(text string) string {
 
 // removeHTMLTags 移除 HTML 标签
 func removeHTMLTags(s string) string {
-	re := regexp.MustCompile(`<[^>]*>`)
-	return re.ReplaceAllString(s, "")
+	return htmlTagRe.ReplaceAllString(s, "")
 }
 
 // removeEmphasis 移除 Markdown 强调符号
 func removeEmphasis(s string) string {
-	// 移除 **, *, __, ~~, `
-	// 注意: 下划线斜体 _text_ 只在下划线位于单词边界时生效
-	patterns := []string{
-		`\*\*(.+?)\*\*`,            // **bold**
-		`\*(.+?)\*`,                // *italic*
-		`__(.+?)__`,                // __bold__
-		`(?:^|[\s])_([^_]+?)_(?:[\s]|$)`, // _italic_ (只匹配单词边界的下划线)
-		`~~(.+?)~~`,                // ~~strikethrough~~
-		"`(.+?)`",                  // `code`
-	}
-
 	result := s
-	for _, pattern := range patterns {
-		re := regexp.MustCompile(pattern)
-		result = re.ReplaceAllString(result, "$1")
-	}
+
+	// 按顺序应用各个正则替换
+	result = boldDoubleRe.ReplaceAllString(result, "$1")
+	result = italicStarRe.ReplaceAllString(result, "$1")
+	result = boldUnderRe.ReplaceAllString(result, "$1")
+	result = italicUnderRe.ReplaceAllString(result, "$1")
+	result = strikeRe.ReplaceAllString(result, "$1")
+	result = codeRe.ReplaceAllString(result, "$1")
 
 	// 移除链接语法 [text](url) -> text
-	linkRe := regexp.MustCompile(`\[([^\]]+)\]\([^)]+\)`)
 	result = linkRe.ReplaceAllString(result, "$1")
 
 	// 移除图片语法 ![alt](url) -> alt
-	imgRe := regexp.MustCompile(`!\[([^\]]*)\]\([^)]+\)`)
 	result = imgRe.ReplaceAllString(result, "$1")
 
 	return result
@@ -104,8 +109,7 @@ func filterCharacters(s string) string {
 
 // mergeHyphens 合并多个连续的连字符为一个
 func mergeHyphens(s string) string {
-	re := regexp.MustCompile(`-+`)
-	return re.ReplaceAllString(s, "-")
+	return hyphensRe.ReplaceAllString(s, "-")
 }
 
 // handleDuplicate 处理重复标题
@@ -114,20 +118,7 @@ func (g *AnchorGenerator) handleDuplicate(anchor string) string {
 	g.counter[anchor] = count + 1
 
 	if exists {
-		return anchor + "-" + itoa(count)
+		return anchor + "-" + strconv.Itoa(count)
 	}
 	return anchor
-}
-
-// itoa 简单的整数转字符串
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	var digits []byte
-	for n > 0 {
-		digits = append([]byte{byte('0' + n%10)}, digits...)
-		n /= 10
-	}
-	return string(digits)
 }

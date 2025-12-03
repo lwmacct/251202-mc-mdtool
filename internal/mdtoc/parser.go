@@ -30,8 +30,20 @@ func NewParser(opts Options) *Parser {
 	}
 }
 
-// Parse 解析 Markdown 内容，返回标题列表
+// Parse 解析 Markdown 内容，返回标题列表 (受 MinLevel/MaxLevel 限制)
 func (p *Parser) Parse(content []byte) ([]*Header, error) {
+	return p.parseHeaders(content, true)
+}
+
+// ParseAllHeaders 解析所有标题 (不受 MinLevel/MaxLevel 限制)
+// 用于章节模式，需要完整的标题层级信息
+func (p *Parser) ParseAllHeaders(content []byte) ([]*Header, error) {
+	return p.parseHeaders(content, false)
+}
+
+// parseHeaders 解析标题的内部实现
+// filterLevel 控制是否按 MinLevel/MaxLevel 过滤标题
+func (p *Parser) parseHeaders(content []byte, filterLevel bool) ([]*Header, error) {
 	// 重置锚点生成器
 	p.anchor.Reset()
 
@@ -42,9 +54,7 @@ func (p *Parser) Parse(content []byte) ([]*Header, error) {
 	parseContent := content
 
 	if frontmatterEnd >= 0 {
-		// 有 frontmatter，只解析 frontmatter 之后的内容
 		lineOffset = frontmatterEnd + 1
-		// 重新组装 frontmatter 之后的内容
 		parseContent = bytes.Join(lines[lineOffset:], []byte("\n"))
 	}
 
@@ -69,8 +79,8 @@ func (p *Parser) Parse(content []byte) ([]*Header, error) {
 			return ast.WalkContinue, nil
 		}
 
-		// 检查层级范围
-		if heading.Level < p.options.MinLevel || heading.Level > p.options.MaxLevel {
+		// 检查层级范围（仅在 filterLevel 为 true 时）
+		if filterLevel && (heading.Level < p.options.MinLevel || heading.Level > p.options.MaxLevel) {
 			return ast.WalkSkipChildren, nil
 		}
 
@@ -157,10 +167,7 @@ func calculateEndLines(headers []*Header, totalLines int) {
 				break
 			}
 		}
-		h.EndLine = endLine
-		if h.EndLine < h.Line {
-			h.EndLine = h.Line
-		}
+		h.EndLine = max(endLine, h.Line)
 	}
 }
 
@@ -169,60 +176,6 @@ func extractText(src []byte, n ast.Node) string {
 	var buf bytes.Buffer
 	writeNodeText(src, &buf, n)
 	return buf.String()
-}
-
-// ParseAllHeaders 解析所有标题 (不受 MinLevel/MaxLevel 限制)
-// 用于章节模式，需要完整的标题层级信息
-func (p *Parser) ParseAllHeaders(content []byte) ([]*Header, error) {
-	p.anchor.Reset()
-
-	// 检测并跳过 frontmatter
-	lines := bytes.Split(content, []byte("\n"))
-	frontmatterEnd := FindFrontmatterEnd(lines)
-	lineOffset := 0
-	parseContent := content
-
-	if frontmatterEnd >= 0 {
-		// 有 frontmatter，只解析 frontmatter 之后的内容
-		lineOffset = frontmatterEnd + 1
-		// 重新组装 frontmatter 之后的内容
-		parseContent = bytes.Join(lines[lineOffset:], []byte("\n"))
-	}
-
-	lineMap := buildLineMap(parseContent)
-	totalLines := countLines(content)
-
-	reader := text.NewReader(parseContent)
-	doc := p.md.Parser().Parse(reader)
-
-	var headers []*Header
-
-	err := ast.Walk(doc, func(n ast.Node, entering bool) (ast.WalkStatus, error) {
-		if !entering {
-			return ast.WalkContinue, nil
-		}
-
-		heading, ok := n.(*ast.Heading)
-		if !ok {
-			return ast.WalkContinue, nil
-		}
-
-		text := extractText(parseContent, heading)
-		anchor := p.anchor.Generate(text)
-		line := getNodeLine(heading, lineMap) + lineOffset
-
-		headers = append(headers, &Header{
-			Level:      heading.Level,
-			Text:       text,
-			AnchorLink: anchor,
-			Line:       line,
-		})
-
-		return ast.WalkSkipChildren, nil
-	})
-
-	calculateEndLines(headers, totalLines)
-	return headers, err
 }
 
 // SplitSections 将标题列表按 H1 分割成章节
