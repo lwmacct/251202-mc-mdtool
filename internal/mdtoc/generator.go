@@ -51,12 +51,13 @@ func (g *Generator) Generate(headers []*Header) string {
 			link = "[" + h.Text + "]"
 		}
 
-		// 添加行号范围 (VS Code 兼容格式)
+		// 添加行号范围 (LLM 友好格式: :start+count)
 		if g.options.LineNumber && h.Line > 0 {
+			count := h.EndLine - h.Line + 1
 			if g.options.ShowPath && g.options.FilePath != "" {
-				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + "+" + itoa(count) + "`"
 			} else {
-				link += " `:" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+				link += " `:" + itoa(h.Line) + "+" + itoa(count) + "`"
 			}
 		}
 
@@ -139,10 +140,11 @@ func (g *Generator) GenerateSection(section *Section) string {
 			link = "[" + h.Text + "]"
 		}
 		if g.options.LineNumber && h.Line > 0 {
+			count := h.EndLine - h.Line + 1
 			if g.options.ShowPath && g.options.FilePath != "" {
-				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+				link += " `" + g.options.FilePath + ":" + itoa(h.Line) + "+" + itoa(count) + "`"
 			} else {
-				link += " `:" + itoa(h.Line) + ":" + itoa(h.EndLine) + "`"
+				link += " `:" + itoa(h.Line) + "+" + itoa(count) + "`"
 			}
 		}
 

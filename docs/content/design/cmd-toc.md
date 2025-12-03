@@ -2,13 +2,13 @@
 
 <!--TOC-->
 
-- [命令行接口](#命令行接口) `:19:36`
-- [功能特性](#功能特性) `:37:57`
-- [输出格式](#输出格式) `:58:81`
-- [TOC 标记规范](#toc-标记规范) `:82:96`
-- [YAML Frontmatter 支持](#yaml-frontmatter-支持) `:97:118`
-- [技术实现](#技术实现) `:119:132`
-- [参考项目](#参考项目) `:133:139`
+- [命令行接口](#命令行接口) `:19+18`
+- [功能特性](#功能特性) `:37+21`
+- [输出格式](#输出格式) `:58+24`
+- [TOC 标记规范](#toc-标记规范) `:82+15`
+- [YAML Frontmatter 支持](#yaml-frontmatter-支持) `:97+22`
+- [技术实现](#技术实现) `:119+14`
+- [参考项目](#参考项目) `:133+7`
 
 <!--TOC-->
 
@@ -28,8 +28,8 @@ Options:
   -i, --in-place     原地更新文件
   -d, --delete       删除文件中的 TOC 标记和内容
   -o, --ordered      有序列表
-  -L, --line-number  显示行号范围 :start:end (默认启用)
-  -p, --path         显示文件路径 path:start:end
+  -L, --line-number  显示行号范围 :start+count (默认启用)
+  -p, --path         显示文件路径 path:start+count
   -g, --global       全局模式 (默认为章节模式)
   -a, --anchor       预览时显示锚点链接 [标题](#anchor)
 ```
@@ -44,8 +44,8 @@ Options:
 | 原地更新    | `-i` 直接修改文件                 | ✅ 已完成 |
 | TOC 删除    | `-d` 删除文件中的 TOC             | ✅ 已完成 |
 | 有序列表    | `-o` 生成 `1. 2. 3.` 格式         | ✅ 已完成 |
-| 行号范围    | `-L` 显示 `:start:end`            | ✅ 已完成 |
-| 文件路径    | `-p` 显示 `path:start:end`        | ✅ 已完成 |
+| 行号范围    | `-L` 显示 `:start+count`          | ✅ 已完成 |
+| 文件路径    | `-p` 显示 `path:start+count`      | ✅ 已完成 |
 | 锚点显示    | `-a` 预览时显示 `[标题](#anchor)` | ✅ 已完成 |
 | 章节模式    | 默认：每个 H1 后生成独立子目录    | ✅ 已完成 |
 | H2 检查     | 章节需至少包含一个 H2 才生成 TOC  | ✅ 已完成 |
@@ -60,15 +60,15 @@ Options:
 ```shell
 # 默认输出 (预览模式不显示锚点)
 mc-mdtool toc README.md
-# - [标题] `:1:10`
+# - [标题] `:1+10`
 
 # 显示锚点链接
 mc-mdtool toc -a README.md
-# - [标题](#标题) `:1:10`
+# - [标题](#标题) `:1+10`
 
 # 带文件路径
 mc-mdtool toc -a -p README.md
-# - [标题](#标题) `README.md:1:10`
+# - [标题](#标题) `README.md:1+10`
 
 # 禁用行号
 mc-mdtool toc -a -L=false README.md
@@ -76,7 +76,7 @@ mc-mdtool toc -a -L=false README.md
 
 # 写入文件时自动启用锚点链接
 mc-mdtool toc -i README.md
-# 文件内容: - [标题](#标题) `:1:10`
+# 文件内容: - [标题](#标题) `:1+10`
 ```
 
 ## TOC 标记规范

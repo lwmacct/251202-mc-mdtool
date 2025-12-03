@@ -393,8 +393,8 @@ Old TOC content
 
 <!--TOC-->
 
-- [Section 1](#section-1) ` + "`:10:15`" + `
-- [Section 2](#section-2) ` + "`:16:20`" + `
+- [Section 1](#section-1) ` + "`:10+6`" + `
+- [Section 2](#section-2) ` + "`:16+5`" + `
 
 <!--TOC-->
 

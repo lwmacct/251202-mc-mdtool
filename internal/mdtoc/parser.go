@@ -131,17 +131,22 @@ func getNodeLine(n ast.Node, lineMap []int) int {
 }
 
 // calculateEndLines 计算每个标题的结束行
+// 规则：标题的结束行是下一个同级或更高级标题的前一行
+// 这样父级标题会包含其所有子级内容
 func calculateEndLines(headers []*Header, totalLines int) {
 	for i, h := range headers {
-		if i+1 < len(headers) {
-			// 下一个标题的前一行
-			h.EndLine = headers[i+1].Line - 1
-			if h.EndLine < h.Line {
-				h.EndLine = h.Line
+		// 查找下一个同级或更高级的标题
+		endLine := totalLines
+		for j := i + 1; j < len(headers); j++ {
+			if headers[j].Level <= h.Level {
+				// 找到同级或更高级标题，结束行是其前一行
+				endLine = headers[j].Line - 1
+				break
 			}
-		} else {
-			// 最后一个标题，到文件末尾
-			h.EndLine = totalLines
+		}
+		h.EndLine = endLine
+		if h.EndLine < h.Line {
+			h.EndLine = h.Line
 		}
 	}
 }

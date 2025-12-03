@@ -151,9 +151,9 @@ More content...
 		line    int
 		endLine int
 	}{
-		{"Title", 1, 2},
-		{"Section 1", 3, 5},
-		{"Section 2", 6, 7},
+		{"Title", 1, 7},      // H1 包含所有 H2 子内容
+		{"Section 1", 3, 5},  // H2 到下一个 H2 前
+		{"Section 2", 6, 7},  // H2 到文件末尾
 	}
 
 	if len(got) != len(expected) {
