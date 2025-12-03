@@ -1,4 +1,4 @@
-module github.com/lwmacct/251202-mc-mdtool
+module github.com/lwmacct/251202-mc-mdtoc
 
 go 1.25.0
 

@@ -11,7 +11,7 @@ import markdownConfig from "./config/markdown";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "mc-mdtool",
+  title: "mc-mdtoc",
   description: "Markdown CLI 工具集",
   base: process.env.BASE || "/docs",
   srcDir: "content",
@@ -27,9 +27,7 @@ export default defineConfig({
     // 本地搜索 - 使用 MiniSearch 实现浏览器内索引
     search: cfgSearch as DefaultTheme.Config["search"],
 
-    socialLinks: [
-      { icon: "github", link: "https://github.com/vuejs/vitepress" },
-    ],
+    socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
   },
 
   // Markdown 渲染配置 (从 ./config/markdown.ts 导入)

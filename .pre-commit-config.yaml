@@ -39,12 +39,12 @@ repos:
         stages: [pre-commit]
         files: ^(internal/infrastructure/config/config\.go|configs/config\.yaml)$
 
-      - id: prettier
-        name: Format docs and configs with Prettier
-        entry: prettier --write --ignore-unknown
-        language: system
-        stages: [pre-commit]
-        files: ^(docs/|configs/)
+      # - id: prettier
+      #   name: Format docs and configs with Prettier
+      #   entry: prettier --write --ignore-unknown
+      #   language: system
+      #   stages: [pre-commit]
+      #   files: ^(docs/|configs/)
 
 # 全局配置
 default_stages: [pre-commit]

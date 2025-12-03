@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/lwmacct/251125-go-mod-logger/pkg/logger"
-	"github.com/lwmacct/251202-mc-mdtool/internal/commands/mdtool"
+	"github.com/lwmacct/251202-mc-mdtoc/internal/commands/mdtoc"
 )
 
 var version = "v0.0.0"
@@ -17,7 +17,7 @@ func main() {
 		slog.Warn("初始化日志系统失败，使用默认配置", "error", err)
 	}
 
-	cmd := mdtool.Command(version)
+	cmd := mdtoc.Command(version)
 	if err := cmd.Run(context.Background(), os.Args); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)

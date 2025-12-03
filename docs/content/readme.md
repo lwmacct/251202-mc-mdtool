@@ -1,92 +1,78 @@
-# mc-mdtool
+# mc-mdtoc
 
 <!--TOC-->
 
-- [功能特性](#功能特性) `:20+9`
-- [安装](#安装) `:29+10`
-- [使用示例](#使用示例) `:39+39`
-  - [toc 命令选项](#toc-命令选项) `:78+13`
-- [开发](#开发) `:91+2`
-  - [环境准备](#环境准备) `:93+10`
-  - [构建](#构建) `:103+6`
-- [设计文档](#设计文档) `:109+6`
-- [参考项目](#参考项目) `:115+11`
-- [相关链接](#相关链接) `:126+5`
+- [功能特性](#功能特性) `:19+8`
+- [安装](#安装) `:27+10`
+- [使用示例](#使用示例) `:37+26`
+- [命令选项](#命令选项) `:63+14`
+- [开发](#开发) `:77+18`
+  - [环境准备](#环境准备) `:79+10`
+  - [构建](#构建) `:89+6`
+- [参考项目](#参考项目) `:95+7`
+- [相关链接](#相关链接) `:102+4`
 
 <!--TOC-->
 
-Markdown CLI 工具集，提供目录生成、格式化、检查等功能。
+Markdown TOC 生成工具，为 Markdown 文件自动生成符合规范的目录（Table of Contents）。
 
 ## 功能特性
 
-| 子命令  | 说明                   | 状态      |
-| ------- | ---------------------- | --------- |
-| `toc`   | 生成 Table of Contents | ✅ 已完成 |
-| `fmt`   | 格式化 Markdown        | 📋 计划中 |
-| `lint`  | 检查 Markdown 规范     | 📋 计划中 |
-| `links` | 检查链接有效性         | 📋 计划中 |
+- 生成 GitHub 风格的 Table of Contents
+- 支持 `<!--TOC-->` 标记定位，原地更新文件
+- 章节模式：每个 H1 后生成独立子目录
+- 支持 YAML Frontmatter（VitePress、Hugo 等）
+- 多文件批量处理，支持管道输入
 
 ## 安装
 
 ```shell
-# 从 GitHub 安装 (需要先发布)
-go install github.com/lwmacct/251202-mc-mdtool/cmd/mc-mdtool@latest
+# 从 GitHub 安装
+go install github.com/lwmacct/251202-mc-mdtoc/cmd/mc-mdtoc@latest
 
 # 本地构建安装
-go install ./cmd/mc-mdtool
+go install ./cmd/mc-mdtoc
 ```
 
 ## 使用示例
 
 ```shell
 # 查看帮助
-mc-mdtool --help
-mc-mdtool toc --help
+mc-mdtoc toc --help
 
 # 生成 TOC 到 stdout
-mc-mdtool toc README.md
-
-# 显示行号范围 (默认启用, VS Code 兼容格式)
-mc-mdtool toc README.md
-# 输出: - [标题](#标题) `:1:10`
-
-# 显示文件路径 + 行号范围
-mc-mdtool toc -p README.md
-# 输出: - [标题](#标题) `README.md:1:10`
-
-# 禁用行号范围
-mc-mdtool toc -L=false README.md
+mc-mdtoc toc README.md
 
 # 原地更新文件 (在 <!--TOC--> 标记处插入)
-mc-mdtool toc -i README.md
+mc-mdtoc toc -i README.md
 
-# 检查 TOC 是否需要更新 (CI 场景)
-mc-mdtool toc -d README.md
+# 显示文件路径 + 行号范围
+mc-mdtoc toc -p README.md
+# 输出: - [标题](#标题) `README.md:1+10`
 
 # 使用有序列表 + 指定层级
-mc-mdtool toc -o -m 2 -M 4 README.md
+mc-mdtoc toc -o -m 2 -M 4 README.md
 
 # 多文件处理
-mc-mdtool toc file1.md file2.md file3.md
-mc-mdtool toc -i docs/*.md
+mc-mdtoc toc -i docs/*.md
 
 # 管道输入 (从 stdin 读取文件列表)
-find . -name "*.md" | mc-mdtool toc
-find . -name "*.md" | mc-mdtool toc -i
+fd -e md | mc-mdtoc toc -i
 ```
 
-### toc 命令选项
+## 命令选项
 
-| 选项            | 短选项 | 说明                                 |
-| --------------- | ------ | ------------------------------------ |
-| `--min-level`   | `-m`   | 最小标题层级 (默认 1)                |
-| `--max-level`   | `-M`   | 最大标题层级 (默认 3)                |
-| `--in-place`    | `-i`   | 原地更新文件                         |
-| `--diff`        | `-d`   | 检查是否需要更新                     |
-| `--ordered`     | `-o`   | 使用有序列表                         |
-| `--line-number` | `-L`   | 显示行号范围 `:start:end` (默认启用) |
-| `--path`        | `-p`   | 显示文件路径 `path:start:end`        |
-| `--section`     | `-s`   | 章节模式: 每个 H1 后生成独立子目录   |
+| 选项            | 短选项 | 说明                                   |
+| --------------- | ------ | -------------------------------------- |
+| `--min-level`   | `-m`   | 最小标题层级 (默认 1)                  |
+| `--max-level`   | `-M`   | 最大标题层级 (默认 3)                  |
+| `--in-place`    | `-i`   | 原地更新文件                           |
+| `--delete`      | `-d`   | 删除文件中的 TOC                       |
+| `--ordered`     | `-o`   | 使用有序列表                           |
+| `--line-number` | `-L`   | 显示行号范围 `:start+count` (默认启用) |
+| `--path`        | `-p`   | 显示文件路径 `path:start+count`        |
+| `--global`      | `-g`   | 全局模式 (默认为章节模式)              |
+| `--anchor`      | `-a`   | 预览时显示锚点链接                     |
 
 ## 开发
 
@@ -103,28 +89,17 @@ task -a
 ### 构建
 
 ```shell
-go build ./cmd/mc-mdtool/
+go build ./cmd/mc-mdtoc/
 ```
-
-## 设计文档
-
-- [toc 命令设计](design/cmd-toc.md)
-- [fmt 命令设计](design/cmd-fmt.md)
-- [解析器参考](design/ref-parsers.md)
 
 ## 参考项目
 
-| 项目                                                       | 语言    | 说明              |
-| ---------------------------------------------------------- | ------- | ----------------- |
-| [md-toc](https://github.com/frnmst/md-toc)                 | Python  | TOC 生成          |
-| [goldmark](https://github.com/yuin/goldmark)               | Go      | CommonMark 解析器 |
-| [glamour](https://github.com/charmbracelet/glamour)        | Go      | Markdown 渲染     |
-| [mdsf](https://github.com/hougesen/mdsf)                   | Rust    | 代码块格式化      |
-| [markdownlint](https://github.com/DavidAnson/markdownlint) | Node.js | Markdown 检查     |
-| [lychee](https://github.com/lycheeverse/lychee)            | Rust    | 链接检查          |
+| 项目                                         | 语言   | 说明              |
+| -------------------------------------------- | ------ | ----------------- |
+| [md-toc](https://github.com/frnmst/md-toc)   | Python | TOC 生成          |
+| [goldmark](https://github.com/yuin/goldmark) | Go     | CommonMark 解析器 |
 
 ## 相关链接
 
-- [Taskfile](https://taskfile.dev) - 任务管理
-- [Pre-commit](https://pre-commit.com/) - Git hooks 管理
 - [CommonMark Spec](https://spec.commonmark.org/0.31.2/) - Markdown 规范
+- [Taskfile](https://taskfile.dev) - 任务管理

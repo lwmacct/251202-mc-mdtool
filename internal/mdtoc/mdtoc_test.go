@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lwmacct/251202-mc-mdtool/internal/mdtoc"
+	"github.com/lwmacct/251202-mc-mdtoc/internal/mdtoc"
 )
 
 // TestTOC_GenerateFromContent 测试从内容生成 TOC 的核心功能
@@ -74,8 +74,8 @@ Content here
 			contains: []string{"`:", "-"},
 		},
 		{
-			name: "code block headers ignored",
-			content: "# Real Header\n```markdown\n# Fake Header\n```\n## Another Real",
+			name:     "code block headers ignored",
+			content:  "# Real Header\n```markdown\n# Fake Header\n```\n## Another Real",
 			opts:     mdtoc.Options{MinLevel: 1, MaxLevel: 2, ShowAnchor: true},
 			contains: []string{"[Real Header]", "[Another Real]"},
 			excludes: []string{"[Fake Header]"},

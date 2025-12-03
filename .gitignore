@@ -35,7 +35,7 @@ __pycache__/
 # build binaries
 /bin/
 /main
-/mc-mdtool
+/mc-mdtoc
 
 # AI Agent 相关
 # **/.agent/*

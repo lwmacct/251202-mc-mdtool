@@ -14,4 +14,4 @@ tasks:
   toc:
     desc: 生成 Markdown 目录 (TOC)
     cmds:
-      - fd . -E vendor -e md | go run cmd/mc-mdtool/main.go toc -i
+      - fd . -E vendor -e md | go run cmd/mc-mdtoc/main.go toc -i
