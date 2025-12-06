@@ -11,7 +11,7 @@ import (
 	"github.com/urfave/cli/v3"
 )
 
-func tocAction(ctx context.Context, cmd *cli.Command) error {
+func action(ctx context.Context, cmd *cli.Command) error {
 	// 解析命令行参数
 	minLevel := cmd.Int("min-level")
 	maxLevel := cmd.Int("max-level")
